@@ -1,5 +1,12 @@
-var colours = window.gradientSteps ? gradientSteps('#F3B845', '#DF4E76', 100) : [];
+var colours = typeof window !== 'undefined' && window.gradientSteps ? gradientSteps('#F3B845', '#DF4E76', 100) : [];
 function getBrowser() {
+	// Service worker compatible browser detection
+	if (typeof window === 'undefined') {
+		// In service worker, check user agent
+		if (navigator.userAgent.indexOf('Firefox') !== -1) return 'firefox';
+		return 'chrome';
+	}
+	// Original browser detection for content scripts/popup
 	if (!!navigator.userAgent.match(/safari/i) && !navigator.userAgent.match(/chrome/i) && typeof document.body.style.webkitFilter !== 'undefined') return 'safari';
 	if (!!window.sidebar) return 'firefox';
 	return 'chrome';
@@ -59,7 +66,17 @@ async function getStorageSize() {
 	return calcObjectSize(tabs) + calcObjectSize(options);
 }
 async function isIncognitoAllowed() {
-	return new Promise(r => chrome.extension.isAllowedIncognitoAccess(r));
+	// In Manifest V3, chrome.extension.isAllowedIncognitoAccess is deprecated
+	// Use chrome.permissions.contains instead
+	try {
+		return await chrome.permissions.contains({ permissions: ['tabs'] });
+	} catch (e) {
+		// Fallback for older browsers
+		if (chrome.extension && chrome.extension.isAllowedIncognitoAccess) {
+			return new Promise(r => chrome.extension.isAllowedIncognitoAccess(r));
+		}
+		return false;
+	}
 }
 
 /*	SAVE 	*/
@@ -124,8 +141,8 @@ async function updateBadge(cachedTabs, cachedBadge) {
 	var tabs = cachedTabs || await getSnoozedTabs();
 	tabs = sleeping(tabs);
 	if (tabs.length > 0 && badge && ['all','today'].includes(badge)) num = badge === 'today' ? today(tabs).length : tabs.length;
-	chrome.browserAction.setBadgeText({text: num > 0 ? num.toString() : ''});
-	chrome.browserAction.setBadgeBackgroundColor({color: '#0072BC'});
+	chrome.action.setBadgeText({text: num > 0 ? num.toString() : ''});
+	chrome.action.setBadgeBackgroundColor({color: '#0072BC'});
 }
 
 /*	OPEN 	*/

@@ -154,7 +154,7 @@ async function contextMenuUpdater(menu) {
 	for (c of menu.menuIds) {
 		if (choices[c]) await chrome.contextMenus.update(c, {enabled: !choices[c].disabled});
 	}
-	await chrome.contextMenus.refresh();
+	// chrome.contextMenus.refresh() is not needed in Manifest V3
 }
 
 async function cleanUpHistory(tabs) {
