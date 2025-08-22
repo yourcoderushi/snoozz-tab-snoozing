@@ -1,5 +1,12 @@
-var colours = window.gradientSteps ? gradientSteps('#F3B845', '#DF4E76', 100) : [];
+var colours = typeof window !== 'undefined' && window.gradientSteps ? gradientSteps('#F3B845', '#DF4E76', 100) : [];
 function getBrowser() {
+	// Service worker compatible browser detection
+	if (typeof window === 'undefined') {
+		// In service worker, check user agent
+		if (navigator.userAgent.indexOf('Firefox') !== -1) return 'firefox';
+		return 'chrome';
+	}
+	// Original browser detection for content scripts/popup
 	if (!!navigator.userAgent.match(/safari/i) && !navigator.userAgent.match(/chrome/i) && typeof document.body.style.webkitFilter !== 'undefined') return 'safari';
 	if (!!window.sidebar) return 'firefox';
 	return 'chrome';
