@@ -10,9 +10,9 @@
 		"32": "icons/ext-icon-32.png",
 		"16": "icons/ext-icon-16.png"
 	},
-	"manifest_version": 2,
+	"manifest_version": 3,
 
-	"browser_action": {
+	"action": {
 		"default_popup": "html/popup.html"
 	},
 	"author": "Rohan Bhansali",
@@ -22,13 +22,15 @@
 	},
 	
 	"background": {
-		"scripts": ["scripts/dayjs.min.js", "scripts/common.js", "scripts/poll.js", "scripts/background.js"]
+		"service_worker": "scripts/service-worker.js"
 	},
-	"offline_enabled": true,
 
 	"permissions": ["alarms", "contextMenus", "idle", "notifications", "storage", "tabs"],
 
-	"web_accessible_resources": ["html/settings.html"],
+	"web_accessible_resources": [{
+		"resources": ["html/settings.html"],
+		"matches": ["<all_urls>"]
+	}],
 
 	"content_scripts": [{
 		"matches": ["https://*.snoozz.me/*"],

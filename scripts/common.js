@@ -59,7 +59,17 @@ async function getStorageSize() {
 	return calcObjectSize(tabs) + calcObjectSize(options);
 }
 async function isIncognitoAllowed() {
-	return new Promise(r => chrome.extension.isAllowedIncognitoAccess(r));
+	// In Manifest V3, chrome.extension.isAllowedIncognitoAccess is deprecated
+	// Use chrome.permissions.contains instead
+	try {
+		return await chrome.permissions.contains({ permissions: ['tabs'] });
+	} catch (e) {
+		// Fallback for older browsers
+		if (chrome.extension && chrome.extension.isAllowedIncognitoAccess) {
+			return new Promise(r => chrome.extension.isAllowedIncognitoAccess(r));
+		}
+		return false;
+	}
 }
 
 /*	SAVE 	*/
@@ -124,8 +134,8 @@ async function updateBadge(cachedTabs, cachedBadge) {
 	var tabs = cachedTabs || await getSnoozedTabs();
 	tabs = sleeping(tabs);
 	if (tabs.length > 0 && badge && ['all','today'].includes(badge)) num = badge === 'today' ? today(tabs).length : tabs.length;
-	chrome.browserAction.setBadgeText({text: num > 0 ? num.toString() : ''});
-	chrome.browserAction.setBadgeBackgroundColor({color: '#0072BC'});
+	chrome.action.setBadgeText({text: num > 0 ? num.toString() : ''});
+	chrome.action.setBadgeBackgroundColor({color: '#0072BC'});
 }
 
 /*	OPEN 	*/
